@@ -1,65 +1,147 @@
-import Image from "next/image";
+"use client";
+
+import { AnimatedBackground } from "@/components/AnimatedBackground";
+
+const features = [
+  {
+    title: "Clear milestones",
+    description:
+      "Move step by step through the core areas of machine learning with a simple structure.",
+  },
+  {
+    title: "Practical learning path",
+    description:
+      "Blend theory, projects, and hands-on practice in one place to keep momentum high.",
+  },
+  {
+    title: "Built for focus",
+    description:
+      "A calm interface that helps you stay centered on what matters most: learning.",
+  },
+];
+
+const socials = [
+  { label: "GitHub", href: "https://github.com/mahm0udnasr" },
+  { label: "LinkedIn", href: "https://www.linkedin.com/in/mahm0udnasr" },
+  { label: "Telegram", href: "https://t.me/mahm0udnasr" },
+];
 
 export default function Home() {
   return (
-    <div className="flex flex-col flex-1 items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex flex-1 w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
-        </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+    <>
+      <AnimatedBackground />
+      <main className="flex flex-1 flex-col items-center relative z-10 bg-transparent px-4 py-10 sm:px-6 sm:py-16 lg:px-8 lg:py-20">
+        <section className="card-surface w-full max-w-6xl overflow-hidden">
+          <div className="grid gap-10 px-6 py-10 sm:px-8 sm:py-12 lg:grid-cols-[1.2fr_0.8fr] lg:px-12 lg:py-16">
+            <div className="flex flex-col justify-center gap-6">
+              <span className="w-fit rounded-full bg-[#8b5cf6]/15 px-3 py-1 text-sm font-semibold text-[#c4b5fd]">
+                ML Roadmap
+              </span>
+              <h1 className="max-w-3xl text-4xl font-semibold leading-tight text-white sm:text-5xl">
+                Your structured path to mastering machine learning.
+              </h1>
+              <p className="max-w-2xl text-lg leading-8 text-zinc-300">
+                Explore the roadmap, track the milestones, and build the skills
+                that matter most for modern AI and data work.
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <a
+                  href="/roadmap"
+                  className="rounded-full bg-[#8b5cf6] px-5 py-3 text-sm font-semibold text-white transition duration-200 hover:-translate-y-0.5 hover:bg-[#7c3aed]"
+                >
+                  Open roadmap
+                </a>
+                <a
+                  href="#features"
+                  className="rounded-full border border-white/10 px-5 py-3 text-sm font-semibold text-zinc-200 transition duration-200 hover:-translate-y-0.5 hover:bg-white/10"
+                >
+                  Learn more
+                </a>
+              </div>
+            </div>
+
+            <div className="rounded-3xl border border-white/10 bg-white/5 p-6 text-white shadow-lg">
+              <div className="flex h-full flex-col justify-between gap-8">
+                <div>
+                  <p className="text-sm font-semibold uppercase tracking-[0.25em] text-indigo-100">
+                    What you will get
+                  </p>
+                  <h2 className="mt-3 text-2xl font-semibold sm:text-3xl">
+                    Learn faster with a guided roadmap.
+                  </h2>
+                </div>
+                <div className="grid gap-4 text-sm text-indigo-50 sm:grid-cols-2">
+                  <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur">
+                    <p className="font-semibold">Stage-based learning</p>
+                    <p className="mt-1 text-indigo-100">
+                      From foundations to advanced topics.
+                    </p>
+                  </div>
+                  <div className="rounded-2xl border border-white/20 bg-white/10 p-4 backdrop-blur">
+                    <p className="font-semibold">Hands-on focus</p>
+                    <p className="mt-1 text-indigo-100">
+                      Projects and practice built in.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section
+          id="features"
+          className="card-surface mt-8 w-full max-w-6xl p-6 sm:p-8 lg:p-10"
+        >
+          <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
+            <div>
+              <p className="text-sm font-semibold uppercase tracking-[0.25em] text-indigo-600">
+                Why this platform
+              </p>
+              <h2 className="mt-2 text-2xl font-semibold text-white sm:text-3xl">
+                Everything designed to keep your learning path clear.
+              </h2>
+            </div>
+          </div>
+
+          <div className="mt-8 grid gap-4 md:grid-cols-3">
+            {features.map((feature) => (
+              <article
+                key={feature.title}
+                className="rounded-[1.25rem] border border-white/10 bg-white/5 p-5 transition duration-200 hover:-translate-y-1 hover:bg-white/10"
+              >
+                <h3 className="text-lg font-semibold text-white">
+                  {feature.title}
+                </h3>
+                <p className="mt-2 text-sm leading-7 text-zinc-400">
+                  {feature.description}
+                </p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="mt-8 w-full max-w-6xl">
+          <div className="w-full rounded-4xl border border-white/10 bg-[#11131b] p-6 text-white shadow-sm sm:p-8">
+            <p className="text-sm font-semibold uppercase tracking-[0.25em] text-zinc-400">
+              Follow along
+            </p>
+            <div className="mt-4 flex flex-wrap gap-3">
+              {socials.map((social) => (
+                <a
+                  key={social.label}
+                  href={social.href}
+                  target="_blank"
+                  rel="noreferrer"
+                  className="rounded-full border border-white/15 px-4 py-2 text-sm font-medium text-zinc-100 transition hover:bg-white/10"
+                >
+                  {social.label}
+                </a>
+              ))}
+            </div>
+          </div>
+        </section>
       </main>
-    </div>
+    </>
   );
 }

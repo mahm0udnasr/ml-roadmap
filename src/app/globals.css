@@ -1,26 +1,112 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
-  --foreground: #171717;
+  --background: #0a0a0f;
+  --foreground: #f5f7ff;
+  --surface: #12121b;
+  --surface-soft: #171822;
+  --border: rgba(255, 255, 255, 0.12);
+  --accent: #8b5cf6;
+  --accent-strong: #6366f1;
+  --muted: #9aa4c2;
+  --shadow: 0 20px 60px rgba(2, 6, 23, 0.35);
+  --radius-card: 1.5rem;
+  --radius-panel: 2rem;
+  --radius-pill: 9999px;
+  --space-card: 1.5rem;
+  --space-section: 2rem;
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --color-surface: var(--surface);
+  --color-surface-soft: var(--surface-soft);
+  --color-border: var(--border);
+  --color-accent: var(--accent);
+  --color-accent-strong: var(--accent-strong);
+  --color-muted: var(--muted);
+  --font-sans: var(--font-display);
+  --font-mono: var(--font-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html {
+  scroll-behavior: smooth;
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="0.8"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.3"/></svg>')
+      10 10,
+    auto;
 }
 
 body {
-  background: var(--background);
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="0.8"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.3"/></svg>')
+      10 10,
+    auto;
+}
+
+a,
+button {
+  cursor:
+    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="1"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.5"/></svg>')
+      10 10,
+    pointer;
+}
+
+body {
+  background:
+    radial-gradient(
+      circle at 10% 10%,
+      rgba(139, 92, 246, 0.2),
+      transparent 18%
+    ),
+    radial-gradient(
+      circle at 90% 20%,
+      rgba(99, 102, 241, 0.14),
+      transparent 22%
+    ),
+    linear-gradient(180deg, #0a0a0f 0%, #07070d 100%);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+::selection {
+  background: rgba(139, 92, 246, 0.35);
+  color: #f8f7ff;
+}
+
+body,
+p,
+span,
+div,
+button,
+a,
+input,
+textarea,
+select {
+  letter-spacing: 0.01em;
+}
+
+h1,
+h2,
+h3,
+h4,
+h5,
+h6 {
+  font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
+}
+
+code,
+pre,
+small {
+  font-family: var(--font-mono), monospace;
+}
+
+.card-surface {
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  box-shadow: var(--shadow);
+  border-radius: var(--radius-card);
+  backdrop-filter: blur(32px);
+  -webkit-backdrop-filter: blur(32px);
 }
