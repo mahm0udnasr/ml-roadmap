@@ -171,12 +171,16 @@ export default function RoadmapClient() {
   const isFormOpen = isAddingItem || editingItem !== null;
 
   return (
-    <div className="min-h-screen bg-transparent relative z-10 px-4 py-10 sm:px-6 lg:px-8">
-      <div className="max-w-6xl mx-auto">
+    <div className="min-h-screen bg-transparent relative z-10 px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
+      <div className="mx-auto max-w-6xl">
         <div
-          className={`flex items-center ${isAdmin ? "justify-between" : "justify-center"} mb-12`}
+          className={`mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-center ${
+            isAdmin ? "sm:justify-between" : "sm:justify-center"
+          }`}
         >
-          <h1 className="text-4xl font-bold text-white">Learning Roadmap</h1>
+          <h1 className="text-center text-2xl font-bold text-white sm:text-left sm:text-4xl">
+            Learning Roadmap
+          </h1>
           {isAdmin && (
             <button
               onClick={() => {
@@ -184,7 +188,7 @@ export default function RoadmapClient() {
                 setEditingItem(null);
                 setIsAddingItem(true);
               }}
-              className="flex items-center gap-2 bg-purple-600 hover:bg-purple-700 text-white px-4 py-2 rounded-lg transition-colors"
+              className="mx-auto flex w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:mx-0 sm:w-auto"
             >
               <Plus size={20} />
               Add Item
@@ -192,105 +196,119 @@ export default function RoadmapClient() {
           )}
         </div>
 
-        {/* Timeline Container */}
+        {/* Timeline */}
         <div className="relative">
-          {/* Center Line */}
-          <div className="absolute left-1/2 top-0 bottom-0 w-1 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 transform -translate-x-1/2"></div>
+          {/* Mobile: left rail | Desktop: center rail */}
+          <div className="absolute bottom-0 top-0 left-[11px] w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 md:left-1/2 md:w-1 md:-translate-x-1/2" />
 
-          {/* Timeline Items */}
-          <div className="space-y-12">
-            {sortedItems.map((item, index) => (
-              <div
-                key={item._id}
-                className={`flex items-center ${index % 2 === 0 ? "flex-row" : "flex-row-reverse"}`}
-              >
-                {/* Left/Right Content */}
-                <div className="w-1/2 px-8">
-                  <div className="relative group">
-                    <button
-                      onClick={() => setSelectedItem(item)}
-                      className="w-full text-left"
-                    >
-                      <div className="bg-slate-800/50 hover:bg-slate-700/50 border border-slate-700 hover:border-blue-500 rounded-lg p-6 transition-all duration-300 cursor-pointer shadow-lg hover:shadow-blue-500/20 backdrop-blur-sm">
-                        <h3 className="text-xl font-semibold text-white mb-2 group-hover:text-blue-300 transition-colors">
-                          {item.title}
-                        </h3>
-                      </div>
-                    </button>
+          <div className="space-y-6 sm:space-y-10 md:space-y-12">
+            {sortedItems.map((item, index) => {
+              const isEven = index % 2 === 0;
 
-                    {isAdmin && (
-                      <div
-                        className={`absolute top-2 flex gap-1 ${
-                          index % 2 === 0 ? "right-2" : "left-2"
-                        }`}
+              return (
+                <div
+                  key={item._id}
+                  className={`relative flex items-start md:items-center ${
+                    isEven ? "md:flex-row" : "md:flex-row-reverse"
+                  }`}
+                >
+                  {/* Card column */}
+                  <div
+                    className={`min-w-0 flex-1 pl-10 md:w-1/2 md:flex-none md:pl-0 ${
+                      isEven ? "md:pr-8 md:pl-0" : "md:pl-8 md:pr-0"
+                    }`}
+                  >
+                    <div className="relative">
+                      <button
+                        onClick={() => setSelectedItem(item)}
+                        className="w-full text-left"
                       >
-                        <button
-                          type="button"
-                          onClick={() => handleReorder(item, "up")}
-                          disabled={index === 0}
-                          className="p-1.5 rounded-md bg-slate-900/80 border border-slate-600 text-slate-300 hover:text-white hover:border-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          aria-label="Move up"
-                          title="Move up"
-                        >
-                          <ChevronUp size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleReorder(item, "down")}
-                          disabled={index === sortedItems.length - 1}
-                          className="p-1.5 rounded-md bg-slate-900/80 border border-slate-600 text-slate-300 hover:text-white hover:border-blue-500 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
-                          aria-label="Move down"
-                          title="Move down"
-                        >
-                          <ChevronDown size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => openEditModal(item)}
-                          className="p-1.5 rounded-md bg-slate-900/80 border border-slate-600 text-slate-300 hover:text-white hover:border-blue-500 transition-colors"
-                          aria-label="Edit item"
-                          title="Edit"
-                        >
-                          <Pencil size={16} />
-                        </button>
-                        <button
-                          type="button"
-                          onClick={() => handleDeleteItem(item)}
-                          className="p-1.5 rounded-md bg-slate-900/80 border border-slate-600 text-red-400 hover:text-red-300 hover:border-red-500 transition-colors"
-                          aria-label="Delete item"
-                          title="Delete"
-                        >
-                          <Trash2 size={16} />
-                        </button>
-                      </div>
-                    )}
-                  </div>
-                </div>
+                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-blue-500 hover:bg-slate-700/50 hover:shadow-blue-500/20 sm:rounded-lg sm:p-6">
+                          <h3 className="text-base font-semibold break-words text-white transition-colors sm:text-xl">
+                            {item.title}
+                          </h3>
+                        </div>
+                      </button>
 
-                {/* Center Dot */}
-                <div className="w-4 h-4 bg-blue-500 rounded-full border-4 border-slate-900 flex-shrink-0 shadow-lg shadow-blue-500/50"></div>
-              </div>
-            ))}
+                      {isAdmin && (
+                        <div className="mt-2 flex flex-wrap gap-1.5 md:absolute md:top-2 md:mt-0 md:gap-1 md:right-2">
+                          <button
+                            type="button"
+                            onClick={() => handleReorder(item, "up")}
+                            disabled={index === 0}
+                            className="rounded-md border border-slate-600 bg-slate-900/80 p-2 text-slate-300 transition-colors hover:border-blue-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 sm:p-1.5"
+                            aria-label="Move up"
+                            title="Move up"
+                          >
+                            <ChevronUp size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleReorder(item, "down")}
+                            disabled={index === sortedItems.length - 1}
+                            className="rounded-md border border-slate-600 bg-slate-900/80 p-2 text-slate-300 transition-colors hover:border-blue-500 hover:text-white disabled:cursor-not-allowed disabled:opacity-30 sm:p-1.5"
+                            aria-label="Move down"
+                            title="Move down"
+                          >
+                            <ChevronDown size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => openEditModal(item)}
+                            className="rounded-md border border-slate-600 bg-slate-900/80 p-2 text-slate-300 transition-colors hover:border-blue-500 hover:text-white sm:p-1.5"
+                            aria-label="Edit item"
+                            title="Edit"
+                          >
+                            <Pencil size={16} />
+                          </button>
+                          <button
+                            type="button"
+                            onClick={() => handleDeleteItem(item)}
+                            className="rounded-md border border-slate-600 bg-slate-900/80 p-2 text-red-400 transition-colors hover:border-red-500 hover:text-red-300 sm:p-1.5"
+                            aria-label="Delete item"
+                            title="Delete"
+                          >
+                            <Trash2 size={16} />
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Dot */}
+                  <div className="absolute top-4 left-1.5 z-10 h-3.5 w-3.5 shrink-0 rounded-full border-[3px] border-slate-900 bg-blue-500 shadow-lg shadow-blue-500/50 md:static md:top-auto md:left-auto md:h-4 md:w-4 md:border-4" />
+
+                  {/* Desktop spacer to balance alternating layout */}
+                  <div className="hidden md:block md:w-1/2" />
+                </div>
+              );
+            })}
           </div>
         </div>
       </div>
 
       {/* Detail Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-lg max-w-2xl w-full max-h-96 overflow-y-auto shadow-2xl border border-slate-700">
-            <div className="flex items-start justify-between p-6 border-b border-slate-700 sticky top-0 bg-slate-800">
-              <div className="flex-1">
-                <h2 className="text-2xl font-bold text-white">
-                  {selectedItem.title}
-                </h2>
-              </div>
-              <div className="flex items-center gap-2 ml-4">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+          <div
+            className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:max-h-[85vh] sm:rounded-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="roadmap-detail-title"
+          >
+            <div className="sticky top-0 flex shrink-0 items-start justify-between gap-3 border-b border-slate-700 bg-slate-800 px-4 py-4 sm:px-6">
+              <h2
+                id="roadmap-detail-title"
+                className="min-w-0 flex-1 text-lg font-bold break-words text-white sm:text-2xl"
+              >
+                {selectedItem.title}
+              </h2>
+              <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                 {isAdmin && (
                   <>
                     <button
                       onClick={() => openEditModal(selectedItem)}
-                      className="text-slate-400 hover:text-white transition-colors"
+                      className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
                       aria-label="Edit item"
                       title="Edit"
                     >
@@ -298,7 +316,7 @@ export default function RoadmapClient() {
                     </button>
                     <button
                       onClick={() => handleDeleteItem(selectedItem)}
-                      className="text-red-400 hover:text-red-300 transition-colors"
+                      className="rounded-lg p-2 text-red-400 transition-colors hover:bg-red-500/10 hover:text-red-300"
                       aria-label="Delete item"
                       title="Delete"
                     >
@@ -308,26 +326,27 @@ export default function RoadmapClient() {
                 )}
                 <button
                   onClick={() => setSelectedItem(null)}
-                  className="text-slate-400 hover:text-white transition-colors"
+                  className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                  aria-label="Close"
                 >
                   <X size={24} />
                 </button>
               </div>
             </div>
 
-            <div className="p-6">
+            <div className="overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 sm:py-6">
               <div className="mb-6">
-                <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-2">
+                <h3 className="mb-2 text-xs font-semibold tracking-wider text-slate-300 uppercase sm:text-sm">
                   Description
                 </h3>
-                <p className="text-slate-300 leading-relaxed">
+                <p className="text-sm leading-relaxed break-words text-slate-300 sm:text-base">
                   {selectedItem.description}
                 </p>
               </div>
 
               {selectedItem.refs.length > 0 && (
                 <div>
-                  <h3 className="text-sm font-semibold text-slate-300 uppercase tracking-wider mb-3">
+                  <h3 className="mb-3 text-xs font-semibold tracking-wider text-slate-300 uppercase sm:text-sm">
                     References
                   </h3>
                   <div className="space-y-2">
@@ -337,10 +356,13 @@ export default function RoadmapClient() {
                         href={ref.link}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="flex items-center gap-2 text-blue-400 hover:text-blue-300 transition-colors p-2 rounded hover:bg-slate-700"
+                        className="flex items-start gap-2 rounded-lg p-2.5 text-sm text-blue-400 transition-colors hover:bg-slate-700 hover:text-blue-300 sm:items-center sm:text-base"
                       >
-                        <ExternalLink size={16} />
-                        <span>{ref.title}</span>
+                        <ExternalLink
+                          size={16}
+                          className="mt-0.5 shrink-0 sm:mt-0"
+                        />
+                        <span className="min-w-0 break-words">{ref.title}</span>
                       </a>
                     ))}
                   </div>
@@ -353,23 +375,32 @@ export default function RoadmapClient() {
 
       {/* Add / Edit Item Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center p-4 z-50">
-          <div className="bg-slate-800 rounded-lg max-w-2xl w-full max-h-[90vh] overflow-y-auto shadow-2xl border border-slate-700">
-            <div className="flex items-start justify-between p-6 border-b border-slate-700 sticky top-0 bg-slate-800">
-              <h2 className="text-2xl font-bold text-white">
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+          <div
+            className="flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:max-h-[90vh] sm:rounded-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="roadmap-form-title"
+          >
+            <div className="sticky top-0 flex shrink-0 items-start justify-between gap-3 border-b border-slate-700 bg-slate-800 px-4 py-4 sm:px-6">
+              <h2
+                id="roadmap-form-title"
+                className="min-w-0 flex-1 text-lg font-bold text-white sm:text-2xl"
+              >
                 {editingItem ? "Edit Roadmap Item" : "Add Roadmap Item"}
               </h2>
               <button
                 onClick={resetForm}
-                className="text-slate-400 hover:text-white transition-colors"
+                className="shrink-0 rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="Close"
               >
                 <X size={24} />
               </button>
             </div>
 
-            <div className="p-6 space-y-4">
+            <div className="space-y-4 overflow-y-auto overscroll-contain px-4 py-5 sm:px-6 sm:py-6">
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
                   Title *
                 </label>
                 <input
@@ -378,13 +409,13 @@ export default function RoadmapClient() {
                   onChange={(e) =>
                     setFormData({ ...formData, title: e.target.value })
                   }
-                  className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
                   placeholder="Item title"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-2">
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
                   Description *
                 </label>
                 <textarea
@@ -392,41 +423,45 @@ export default function RoadmapClient() {
                   onChange={(e) =>
                     setFormData({ ...formData, description: e.target.value })
                   }
-                  className="w-full bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500 resize-none"
+                  className="w-full resize-none rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
                   rows={4}
                   placeholder="Item description"
                 />
               </div>
 
               <div>
-                <label className="block text-sm font-semibold text-slate-300 mb-3">
+                <label className="mb-3 block text-sm font-semibold text-slate-300">
                   References
                 </label>
-                <div className="space-y-2">
+                <div className="space-y-3">
                   {formData.refs.map((ref, idx) => (
-                    <div key={idx} className="flex gap-2">
+                    <div
+                      key={idx}
+                      className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                    >
                       <input
                         type="text"
                         value={ref.title}
                         onChange={(e) =>
                           updateRefField(idx, "title", e.target.value)
                         }
-                        className="flex-1 bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
                         placeholder="Reference title"
                       />
                       <input
-                        type="text"
+                        type="url"
                         value={ref.link}
                         onChange={(e) =>
                           updateRefField(idx, "link", e.target.value)
                         }
-                        className="flex-1 bg-slate-700 border border-slate-600 rounded px-3 py-2 text-white placeholder-slate-400 focus:outline-none focus:border-blue-500"
+                        className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
                         placeholder="Reference URL"
                       />
                       {formData.refs.length > 1 && (
                         <button
                           onClick={() => removeRefField(idx)}
-                          className="bg-red-600 hover:bg-red-700 text-white px-3 py-2 rounded transition-colors"
+                          className="flex items-center justify-center rounded-lg bg-red-600 px-3 py-2.5 text-white transition-colors hover:bg-red-700 sm:shrink-0"
+                          aria-label="Remove reference"
                         >
                           <X size={18} />
                         </button>
@@ -436,23 +471,23 @@ export default function RoadmapClient() {
                 </div>
                 <button
                   onClick={addRefField}
-                  className="mt-2 text-sm text-blue-400 hover:text-blue-300 transition-colors"
+                  className="mt-2 text-sm text-blue-400 transition-colors hover:text-blue-300"
                 >
                   + Add Reference
                 </button>
               </div>
 
-              <div className="flex gap-2 pt-4 border-t border-slate-700">
+              <div className="flex flex-col-reverse gap-2 border-t border-slate-700 pt-4 sm:flex-row">
                 <button
                   onClick={resetForm}
-                  className="flex-1 bg-slate-700 hover:bg-slate-600 text-white px-4 py-2 rounded transition-colors"
+                  className="flex-1 rounded-lg bg-slate-700 px-4 py-2.5 text-white transition-colors hover:bg-slate-600"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={editingItem ? handleUpdateItem : handleAddItem}
                   disabled={isSaving}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 disabled:opacity-50 text-white px-4 py-2 rounded transition-colors"
+                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
                 >
                   {isSaving
                     ? "Saving..."
