@@ -27,6 +27,14 @@ import {
   type ReferenceFormRef,
   type StoredReference,
 } from "@/lib/referenceBadges";
+import { useRoadmapProgress } from "@/hooks/useRoadmapProgress";
+import {
+  getItemCardBorderClass,
+  getTimelineDotClass,
+  ProgressControl,
+  RoadmapProgressButton,
+} from "@/components/ProgressControl";
+import { itemProgressKey, type ProgressStatus } from "@/lib/progressStorage";
 
 type RoadmapItem = {
   _id: Id<"roadmapItems">;
@@ -236,6 +244,7 @@ export default function RoadmapClient() {
   const createLabel = useMutation(api.roadmap.createLabel);
   const updateLabel = useMutation(api.roadmap.updateLabel);
   const deleteLabel = useMutation(api.roadmap.deleteLabel);
+  const { getStatus, cycleStatus } = useRoadmapProgress();
 
   const [selectedItem, setSelectedItem] = useState<RoadmapItem | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -264,6 +273,24 @@ export default function RoadmapClient() {
     }
     return map;
   }, [labels]);
+
+  const progressStats = useMemo(() => {
+    const counts: Record<ProgressStatus, number> = {
+      todo: 0,
+      "in-progress": 0,
+      done: 0,
+    };
+
+    for (const item of sortedItems) {
+      const status = getStatus(itemProgressKey(item._id));
+      counts[status]++;
+    }
+
+    return {
+      totalCount: sortedItems.length,
+      counts,
+    };
+  }, [sortedItems, getStatus]);
 
   const resetForm = () => {
     setFormData(emptyForm);
@@ -367,10 +394,7 @@ export default function RoadmapClient() {
     }
   };
 
-  const handleReorder = async (
-    item: RoadmapItem,
-    direction: "up" | "down",
-  ) => {
+  const handleReorder = async (item: RoadmapItem, direction: "up" | "down") => {
     await reorderItem({ id: item._id, direction });
   };
 
@@ -450,25 +474,31 @@ export default function RoadmapClient() {
       <div className="mx-auto max-w-6xl">
         <div
           className={`mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-center ${
-            isAdmin ? "sm:justify-between" : "sm:justify-center"
+            isAdmin ? "sm:justify-between" : "sm:justify-between"
           }`}
         >
           <h1 className="text-center text-2xl font-bold text-white sm:text-left sm:text-4xl">
             Machine Learning
           </h1>
-          {isAdmin && (
-            <button
-              onClick={() => {
-                setFormData(emptyForm);
-                setEditingItem(null);
-                setIsAddingItem(true);
-              }}
-              className="mx-auto flex w-full max-w-xs items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:mx-0 sm:w-auto"
-            >
-              <Plus size={20} />
-              Add Item
-            </button>
-          )}
+          <div className="mx-auto flex w-full max-w-xs items-center justify-center gap-2 sm:mx-0 sm:w-auto">
+            <RoadmapProgressButton
+              counts={progressStats.counts}
+              totalCount={progressStats.totalCount}
+            />
+            {isAdmin && (
+              <button
+                onClick={() => {
+                  setFormData(emptyForm);
+                  setEditingItem(null);
+                  setIsAddingItem(true);
+                }}
+                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:flex-none"
+              >
+                <Plus size={20} />
+                Add Item
+              </button>
+            )}
+          </div>
         </div>
 
         {/* Timeline */}
@@ -479,6 +509,7 @@ export default function RoadmapClient() {
             {sortedItems.map((item, index) => {
               const isEven = index % 2 === 0;
               const itemLabels = labelsByItem.get(item._id) ?? [];
+              const itemStatus = getStatus(itemProgressKey(item._id));
 
               return (
                 <div
@@ -493,12 +524,26 @@ export default function RoadmapClient() {
                     }`}
                   >
                     <div className="relative">
+                      <div className="mb-2 flex items-center justify-between gap-2">
+                        <ProgressControl
+                          status={itemStatus}
+                          onCycle={() => cycleStatus(itemProgressKey(item._id))}
+                        />
+                      </div>
                       <button
                         onClick={() => setSelectedItem(item)}
                         className="w-full text-left"
                       >
-                        <div className="rounded-xl border border-slate-700 bg-slate-800/50 p-4 shadow-lg backdrop-blur-sm transition-all duration-300 hover:border-blue-500 hover:bg-slate-700/50 hover:shadow-blue-500/20 sm:rounded-lg sm:p-6">
-                          <h3 className="text-base font-semibold break-words text-white transition-colors sm:text-xl">
+                        <div
+                          className={`rounded-xl border p-4 shadow-lg backdrop-blur-sm transition-all duration-300 sm:rounded-lg sm:p-6 ${getItemCardBorderClass(itemStatus)}`}
+                        >
+                          <h3
+                            className={`text-base font-semibold break-words text-white transition-colors sm:text-xl ${
+                              itemStatus === "done"
+                                ? "line-through opacity-80"
+                                : ""
+                            }`}
+                          >
                             {item.title}
                           </h3>
                         </div>
@@ -557,7 +602,9 @@ export default function RoadmapClient() {
                     </div>
                   </div>
 
-                  <div className="absolute top-4 left-1.5 z-10 h-3.5 w-3.5 shrink-0 rounded-full border-[3px] border-slate-900 bg-blue-500 shadow-lg shadow-blue-500/50 md:static md:top-auto md:left-auto md:h-4 md:w-4 md:border-4" />
+                  <div
+                    className={`absolute top-4 left-1.5 z-10 h-3.5 w-3.5 shrink-0 rounded-full border-[3px] border-slate-900 shadow-lg md:static md:top-auto md:left-auto md:h-4 md:w-4 md:border-4 ${getTimelineDotClass(itemStatus)}`}
+                  />
 
                   <div className="hidden md:block md:w-1/2" />
                 </div>
@@ -577,12 +624,26 @@ export default function RoadmapClient() {
             aria-labelledby="roadmap-detail-title"
           >
             <div className="sticky top-0 flex shrink-0 items-start justify-between gap-3 border-b border-slate-700 bg-slate-800 px-4 py-4 sm:px-6">
-              <h2
-                id="roadmap-detail-title"
-                className="min-w-0 flex-1 text-lg font-bold break-words text-white sm:text-2xl"
-              >
-                {selectedItem.title}
-              </h2>
+              <div className="min-w-0 flex-1">
+                <div className="mb-3">
+                  <ProgressControl
+                    status={getStatus(itemProgressKey(selectedItem._id))}
+                    onCycle={() =>
+                      cycleStatus(itemProgressKey(selectedItem._id))
+                    }
+                  />
+                </div>
+                <h2
+                  id="roadmap-detail-title"
+                  className={`text-lg font-bold break-words text-white sm:text-2xl ${
+                    getStatus(itemProgressKey(selectedItem._id)) === "done"
+                      ? "line-through opacity-80"
+                      : ""
+                  }`}
+                >
+                  {selectedItem.title}
+                </h2>
+              </div>
               <div className="flex shrink-0 items-center gap-1 sm:gap-2">
                 {isAdmin && (
                   <>
@@ -639,8 +700,13 @@ export default function RoadmapClient() {
                         className="flex items-start gap-2 rounded-lg p-2.5 text-sm text-blue-400 transition-colors hover:bg-slate-700 hover:text-blue-300 sm:items-center sm:text-base"
                       >
                         <ReferenceBadgeDisplay badge={ref.badge} />
-                        <span className="min-w-0 flex-1 break-words">{ref.title}</span>
-                        <ExternalLink size={16} className="mt-0.5 shrink-0 sm:mt-0" />
+                        <span className="min-w-0 flex-1 break-words">
+                          {ref.title}
+                        </span>
+                        <ExternalLink
+                          size={16}
+                          className="mt-0.5 shrink-0 sm:mt-0"
+                        />
                       </a>
                     ))}
                   </div>
