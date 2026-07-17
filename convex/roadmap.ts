@@ -1,6 +1,12 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
 
+const refValidator = v.object({
+  title: v.string(),
+  link: v.string(),
+  badge: v.optional(v.string()),
+});
+
 export const getItems = query({
   args: {},
   handler: async (ctx) => {
@@ -16,12 +22,7 @@ export const createItem = mutation({
   args: {
     title: v.string(),
     description: v.string(),
-    refs: v.array(
-      v.object({
-        title: v.string(),
-        link: v.string(),
-      }),
-    ),
+    refs: v.array(refValidator),
     order: v.number(),
   },
   handler: async (ctx, args) => {
@@ -39,12 +40,7 @@ export const updateItem = mutation({
     id: v.id("roadmapItems"),
     title: v.string(),
     description: v.string(),
-    refs: v.array(
-      v.object({
-        title: v.string(),
-        link: v.string(),
-      }),
-    ),
+    refs: v.array(refValidator),
   },
   handler: async (ctx, args) => {
     await ctx.db.patch(args.id, {

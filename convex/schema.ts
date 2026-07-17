@@ -9,6 +9,7 @@ export default defineSchema({
       v.object({
         title: v.string(),
         link: v.string(),
+        badge: v.optional(v.string()),
       }),
     ),
     order: v.number(),

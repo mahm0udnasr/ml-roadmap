@@ -32,25 +32,11 @@
 
 html {
   scroll-behavior: smooth;
-  cursor:
-    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="0.8"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.3"/></svg>')
-      10 10,
-    auto;
-}
-
-body {
-  cursor:
-    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="0.8"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.3"/></svg>')
-      10 10,
-    auto;
 }
 
 a,
 button {
-  cursor:
-    url('data:image/svg+xml;utf8,<svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="4" fill="%238b5cf6" opacity="1"/><circle cx="10" cy="10" r="8" fill="none" stroke="%238b5cf6" stroke-width="1" opacity="0.5"/></svg>')
-      10 10,
-    pointer;
+  cursor: pointer;
 }
 
 body {

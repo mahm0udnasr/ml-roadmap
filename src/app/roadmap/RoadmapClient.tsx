@@ -13,17 +13,27 @@ import {
   Trash2,
   ChevronUp,
   ChevronDown,
+  Tag,
 } from "lucide-react";
+import {
+  PRESET_REFERENCE_BADGES,
+  emptyReferenceFormRef,
+  getBadgeColorClass,
+  getBadgeIcon,
+  getBadgeLabel,
+  toFormRef,
+  toStoredRef,
+  type ReferenceBadgeType,
+  type ReferenceFormRef,
+  type StoredReference,
+} from "@/lib/referenceBadges";
 
 type RoadmapItem = {
   _id: Id<"roadmapItems">;
   _creationTime: number;
   title: string;
   description: string;
-  refs: Array<{
-    title: string;
-    link: string;
-  }>;
+  refs: StoredReference[];
   order: number;
 };
 
@@ -38,17 +48,89 @@ type RoadmapLabel = {
 type FormData = {
   title: string;
   description: string;
-  refs: Array<{
-    title: string;
-    link: string;
-  }>;
+  refs: ReferenceFormRef[];
 };
 
 const emptyForm: FormData = {
   title: "",
   description: "",
-  refs: [{ title: "", link: "" }],
+  refs: [emptyReferenceFormRef()],
 };
+
+function ReferenceBadgeDisplay({ badge }: { badge?: string }) {
+  const label = getBadgeLabel(badge);
+  const Icon = getBadgeIcon(badge);
+
+  return (
+    <span
+      className={`inline-flex shrink-0 items-center gap-1 rounded-full border px-2 py-0.5 text-[10px] font-semibold tracking-wide uppercase sm:text-xs ${getBadgeColorClass(badge)}`}
+    >
+      <Icon size={12} className="shrink-0" />
+      {label}
+    </span>
+  );
+}
+
+function ReferenceBadgePicker({
+  badgeType,
+  customBadge,
+  onBadgeTypeChange,
+  onCustomBadgeChange,
+}: {
+  badgeType: ReferenceBadgeType;
+  customBadge: string;
+  onBadgeTypeChange: (badgeType: ReferenceBadgeType) => void;
+  onCustomBadgeChange: (value: string) => void;
+}) {
+  return (
+    <div className="space-y-2">
+      <div className="flex flex-wrap gap-1.5">
+        {PRESET_REFERENCE_BADGES.map((badge) => {
+          const Icon = getBadgeIcon(badge);
+          const isSelected = badgeType === badge;
+
+          return (
+            <button
+              key={badge}
+              type="button"
+              onClick={() => onBadgeTypeChange(badge)}
+              className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+                isSelected
+                  ? getBadgeColorClass(badge)
+                  : "border-slate-600 bg-slate-800 text-slate-400 hover:border-slate-500 hover:text-slate-200"
+              }`}
+            >
+              <Icon size={12} />
+              {badge}
+            </button>
+          );
+        })}
+        <button
+          type="button"
+          onClick={() => onBadgeTypeChange("Custom")}
+          className={`inline-flex items-center gap-1 rounded-full border px-2.5 py-1 text-xs font-medium transition-colors ${
+            badgeType === "Custom"
+              ? getBadgeColorClass("Custom")
+              : "border-slate-600 bg-slate-800 text-slate-400 hover:border-slate-500 hover:text-slate-200"
+          }`}
+        >
+          <Tag size={12} />
+          Custom
+        </button>
+      </div>
+
+      {badgeType === "Custom" && (
+        <input
+          type="text"
+          value={customBadge}
+          onChange={(e) => onCustomBadgeChange(e.target.value)}
+          className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2 text-sm text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none"
+          placeholder="Enter custom badge name"
+        />
+      )}
+    </div>
+  );
+}
 
 function SubLabel({
   title,
@@ -196,8 +278,8 @@ export default function RoadmapClient() {
       description: item.description,
       refs:
         item.refs.length > 0
-          ? item.refs.map((ref) => ({ ...ref }))
-          : [{ title: "", link: "" }],
+          ? item.refs.map((ref) => toFormRef(ref))
+          : [emptyReferenceFormRef()],
     });
     setSelectedItem(null);
   };
@@ -220,8 +302,10 @@ export default function RoadmapClient() {
     setLabelTitle("");
   };
 
-  const filteredRefs = () =>
-    formData.refs.filter((ref) => ref.title.trim() && ref.link.trim());
+  const filteredRefs = (): StoredReference[] =>
+    formData.refs
+      .map((ref) => toStoredRef(ref))
+      .filter((ref): ref is StoredReference => ref !== null);
 
   const handleAddItem = async () => {
     if (!formData.title.trim() || !formData.description.trim()) {
@@ -326,13 +410,13 @@ export default function RoadmapClient() {
   const addRefField = () => {
     setFormData({
       ...formData,
-      refs: [...formData.refs, { title: "", link: "" }],
+      refs: [...formData.refs, emptyReferenceFormRef()],
     });
   };
 
   const updateRefField = (
     index: number,
-    field: "title" | "link",
+    field: keyof ReferenceFormRef,
     value: string,
   ) => {
     const newRefs = [...formData.refs];
@@ -340,11 +424,21 @@ export default function RoadmapClient() {
     setFormData({ ...formData, refs: newRefs });
   };
 
+  const updateRefBadgeType = (index: number, badgeType: ReferenceBadgeType) => {
+    const newRefs = [...formData.refs];
+    newRefs[index] = {
+      ...newRefs[index],
+      badgeType,
+      customBadge: badgeType === "Custom" ? newRefs[index].customBadge : "",
+    };
+    setFormData({ ...formData, refs: newRefs });
+  };
+
   const removeRefField = (index: number) => {
     const newRefs = formData.refs.filter((_, i) => i !== index);
     setFormData({
       ...formData,
-      refs: newRefs.length > 0 ? newRefs : [{ title: "", link: "" }],
+      refs: newRefs.length > 0 ? newRefs : [emptyReferenceFormRef()],
     });
   };
 
@@ -352,7 +446,7 @@ export default function RoadmapClient() {
   const isLabelModalOpen = labelModalItemId !== null;
 
   return (
-    <div className="relative z-10 min-h-screen bg-transparent px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <div className="relative min-h-screen bg-transparent px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div
           className={`mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-center ${
@@ -360,7 +454,7 @@ export default function RoadmapClient() {
           }`}
         >
           <h1 className="text-center text-2xl font-bold text-white sm:text-left sm:text-4xl">
-            Learning Roadmap
+            Machine Learning
           </h1>
           {isAdmin && (
             <button
@@ -475,7 +569,7 @@ export default function RoadmapClient() {
 
       {/* Detail Modal */}
       {selectedItem && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
           <div
             className="flex max-h-[92dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:max-h-[85vh] sm:rounded-lg"
             role="dialog"
@@ -544,11 +638,9 @@ export default function RoadmapClient() {
                         rel="noopener noreferrer"
                         className="flex items-start gap-2 rounded-lg p-2.5 text-sm text-blue-400 transition-colors hover:bg-slate-700 hover:text-blue-300 sm:items-center sm:text-base"
                       >
-                        <ExternalLink
-                          size={16}
-                          className="mt-0.5 shrink-0 sm:mt-0"
-                        />
-                        <span className="min-w-0 break-words">{ref.title}</span>
+                        <ReferenceBadgeDisplay badge={ref.badge} />
+                        <span className="min-w-0 flex-1 break-words">{ref.title}</span>
+                        <ExternalLink size={16} className="mt-0.5 shrink-0 sm:mt-0" />
                       </a>
                     ))}
                   </div>
@@ -561,7 +653,7 @@ export default function RoadmapClient() {
 
       {/* Add / Edit Item Modal */}
       {isFormOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
           <div
             className="flex max-h-[94dvh] w-full max-w-2xl flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:max-h-[90vh] sm:rounded-lg"
             role="dialog"
@@ -623,35 +715,47 @@ export default function RoadmapClient() {
                   {formData.refs.map((ref, idx) => (
                     <div
                       key={idx}
-                      className="flex flex-col gap-2 sm:flex-row sm:items-center"
+                      className="space-y-2 rounded-lg border border-slate-700 bg-slate-900/40 p-3"
                     >
-                      <input
-                        type="text"
-                        value={ref.title}
-                        onChange={(e) =>
-                          updateRefField(idx, "title", e.target.value)
+                      <ReferenceBadgePicker
+                        badgeType={ref.badgeType}
+                        customBadge={ref.customBadge}
+                        onBadgeTypeChange={(badgeType) =>
+                          updateRefBadgeType(idx, badgeType)
                         }
-                        className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
-                        placeholder="Reference title"
-                      />
-                      <input
-                        type="url"
-                        value={ref.link}
-                        onChange={(e) =>
-                          updateRefField(idx, "link", e.target.value)
+                        onCustomBadgeChange={(value) =>
+                          updateRefField(idx, "customBadge", value)
                         }
-                        className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
-                        placeholder="Reference URL"
                       />
-                      {formData.refs.length > 1 && (
-                        <button
-                          onClick={() => removeRefField(idx)}
-                          className="flex items-center justify-center rounded-lg bg-red-600 px-3 py-2.5 text-white transition-colors hover:bg-red-700 sm:shrink-0"
-                          aria-label="Remove reference"
-                        >
-                          <X size={18} />
-                        </button>
-                      )}
+                      <div className="flex flex-col gap-2 sm:flex-row sm:items-center">
+                        <input
+                          type="text"
+                          value={ref.title}
+                          onChange={(e) =>
+                            updateRefField(idx, "title", e.target.value)
+                          }
+                          className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
+                          placeholder="Reference title"
+                        />
+                        <input
+                          type="url"
+                          value={ref.link}
+                          onChange={(e) =>
+                            updateRefField(idx, "link", e.target.value)
+                          }
+                          className="w-full min-w-0 rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:flex-1 sm:text-sm"
+                          placeholder="Reference URL"
+                        />
+                        {formData.refs.length > 1 && (
+                          <button
+                            onClick={() => removeRefField(idx)}
+                            className="flex items-center justify-center rounded-lg bg-red-600 px-3 py-2.5 text-white transition-colors hover:bg-red-700 sm:shrink-0"
+                            aria-label="Remove reference"
+                          >
+                            <X size={18} />
+                          </button>
+                        )}
+                      </div>
                     </div>
                   ))}
                 </div>
@@ -689,7 +793,7 @@ export default function RoadmapClient() {
 
       {/* Add / Edit Label Modal */}
       {isLabelModalOpen && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+        <div className="fixed inset-0 z-[100] flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
           <div
             className="flex w-full max-w-md flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:rounded-lg"
             role="dialog"
