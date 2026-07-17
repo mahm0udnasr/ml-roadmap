@@ -13,4 +13,10 @@ export default defineSchema({
     ),
     order: v.number(),
   }).index("by_order", ["order"]),
+
+  roadmapLabels: defineTable({
+    itemId: v.id("roadmapItems"),
+    title: v.string(),
+    order: v.number(),
+  }).index("by_item", ["itemId", "order"]),
 });

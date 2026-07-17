@@ -80,6 +80,66 @@ export const deleteItem = mutation({
   },
 });
 
+export const getLabels = query({
+  args: {},
+  handler: async (ctx) => {
+    return await ctx.db.query("roadmapLabels").collect();
+  },
+});
+
+export const createLabel = mutation({
+  args: {
+    itemId: v.id("roadmapItems"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    const existing = await ctx.db
+      .query("roadmapLabels")
+      .withIndex("by_item", (q) => q.eq("itemId", args.itemId))
+      .collect();
+
+    return await ctx.db.insert("roadmapLabels", {
+      itemId: args.itemId,
+      title: args.title,
+      order: existing.length,
+    });
+  },
+});
+
+export const updateLabel = mutation({
+  args: {
+    id: v.id("roadmapLabels"),
+    title: v.string(),
+  },
+  handler: async (ctx, args) => {
+    await ctx.db.patch(args.id, { title: args.title });
+  },
+});
+
+export const deleteLabel = mutation({
+  args: { id: v.id("roadmapLabels") },
+  handler: async (ctx, args) => {
+    const label = await ctx.db.get(args.id);
+    if (!label) {
+      throw new Error("Label not found");
+    }
+
+    await ctx.db.delete(args.id);
+
+    const remaining = await ctx.db
+      .query("roadmapLabels")
+      .withIndex("by_item", (q) => q.eq("itemId", label.itemId))
+      .collect();
+
+    const sorted = remaining.sort((a, b) => a.order - b.order);
+    for (let i = 0; i < sorted.length; i++) {
+      if (sorted[i].order !== i) {
+        await ctx.db.patch(sorted[i]._id, { order: i });
+      }
+    }
+  },
+});
+
 export const reorderItem = mutation({
   args: {
     id: v.id("roadmapItems"),

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
 import { useUser } from "@clerk/nextjs";
 import { api } from "../../../convex/_generated/api";
@@ -27,6 +27,14 @@ type RoadmapItem = {
   order: number;
 };
 
+type RoadmapLabel = {
+  _id: Id<"roadmapLabels">;
+  _creationTime: number;
+  itemId: Id<"roadmapItems">;
+  title: string;
+  order: number;
+};
+
 type FormData = {
   title: string;
   description: string;
@@ -42,13 +50,110 @@ const emptyForm: FormData = {
   refs: [{ title: "", link: "" }],
 };
 
+function SubLabel({
+  title,
+  isAdmin,
+  onEdit,
+  onDelete,
+}: {
+  title: string;
+  isAdmin: boolean;
+  onEdit: () => void;
+  onDelete: () => void;
+}) {
+  return (
+    <div className="group relative">
+      <div className="rounded-md border border-black bg-[#FFD9A6] px-3 py-1.5 text-left text-xs font-medium text-black sm:text-sm">
+        {title}
+      </div>
+      {isAdmin && (
+        <div className="absolute -top-2 -right-2 flex gap-0.5 opacity-0 transition-opacity group-hover:opacity-100">
+          <button
+            type="button"
+            onClick={onEdit}
+            className="rounded bg-slate-800 p-1 text-white shadow hover:bg-slate-700"
+            aria-label="Edit label"
+          >
+            <Pencil size={12} />
+          </button>
+          <button
+            type="button"
+            onClick={onDelete}
+            className="rounded bg-red-600 p-1 text-white shadow hover:bg-red-700"
+            aria-label="Delete label"
+          >
+            <Trash2 size={12} />
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ItemLabels({
+  labels,
+  isAdmin,
+  onAddLabel,
+  onEditLabel,
+  onDeleteLabel,
+}: {
+  labels: RoadmapLabel[];
+  isAdmin: boolean;
+  onAddLabel: () => void;
+  onEditLabel: (label: RoadmapLabel) => void;
+  onDeleteLabel: (label: RoadmapLabel) => void;
+}) {
+  if (labels.length === 0 && !isAdmin) return null;
+
+  return (
+    <div className="relative mt-3 pl-4">
+      {labels.length > 0 && (
+        <div
+          className="absolute top-2 bottom-2 left-0 w-0 border-l-2 border-dotted border-blue-500"
+          aria-hidden="true"
+        />
+      )}
+      <div className="flex flex-wrap gap-2">
+        {labels.map((label) => (
+          <div key={label._id} className="relative pl-3">
+            <div
+              className="absolute top-1/2 left-0 w-3 -translate-y-1/2 border-t-2 border-dotted border-blue-500"
+              aria-hidden="true"
+            />
+            <SubLabel
+              title={label.title}
+              isAdmin={isAdmin}
+              onEdit={() => onEditLabel(label)}
+              onDelete={() => onDeleteLabel(label)}
+            />
+          </div>
+        ))}
+        {isAdmin && (
+          <button
+            type="button"
+            onClick={onAddLabel}
+            className="flex items-center gap-1 rounded-md border border-dashed border-blue-400 bg-blue-500/10 px-2.5 py-1.5 text-xs font-medium text-blue-300 transition-colors hover:border-blue-300 hover:bg-blue-500/20 hover:text-blue-200"
+          >
+            <Plus size={13} />
+            Add Label
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function RoadmapClient() {
   const { user } = useUser();
   const items = useQuery(api.roadmap.getItems) ?? [];
+  const labels = useQuery(api.roadmap.getLabels) ?? [];
   const createItem = useMutation(api.roadmap.createItem);
   const updateItem = useMutation(api.roadmap.updateItem);
   const deleteItem = useMutation(api.roadmap.deleteItem);
   const reorderItem = useMutation(api.roadmap.reorderItem);
+  const createLabel = useMutation(api.roadmap.createLabel);
+  const updateLabel = useMutation(api.roadmap.updateLabel);
+  const deleteLabel = useMutation(api.roadmap.deleteLabel);
 
   const [selectedItem, setSelectedItem] = useState<RoadmapItem | null>(null);
   const [isAddingItem, setIsAddingItem] = useState(false);
@@ -56,8 +161,27 @@ export default function RoadmapClient() {
   const [formData, setFormData] = useState<FormData>(emptyForm);
   const [isSaving, setIsSaving] = useState(false);
 
+  const [labelModalItemId, setLabelModalItemId] =
+    useState<Id<"roadmapItems"> | null>(null);
+  const [editingLabel, setEditingLabel] = useState<RoadmapLabel | null>(null);
+  const [labelTitle, setLabelTitle] = useState("");
+  const [isSavingLabel, setIsSavingLabel] = useState(false);
+
   const sortedItems = [...items].sort((a, b) => a.order - b.order);
   const isAdmin = user?.publicMetadata?.role === "admin";
+
+  const labelsByItem = useMemo(() => {
+    const map = new Map<string, RoadmapLabel[]>();
+    for (const label of labels) {
+      const existing = map.get(label.itemId) ?? [];
+      existing.push(label);
+      map.set(label.itemId, existing);
+    }
+    for (const [, itemLabels] of map) {
+      itemLabels.sort((a, b) => a.order - b.order);
+    }
+    return map;
+  }, [labels]);
 
   const resetForm = () => {
     setFormData(emptyForm);
@@ -76,6 +200,24 @@ export default function RoadmapClient() {
           : [{ title: "", link: "" }],
     });
     setSelectedItem(null);
+  };
+
+  const openAddLabelModal = (itemId: Id<"roadmapItems">) => {
+    setLabelModalItemId(itemId);
+    setEditingLabel(null);
+    setLabelTitle("");
+  };
+
+  const openEditLabelModal = (label: RoadmapLabel) => {
+    setLabelModalItemId(label.itemId);
+    setEditingLabel(label);
+    setLabelTitle(label.title);
+  };
+
+  const closeLabelModal = () => {
+    setLabelModalItemId(null);
+    setEditingLabel(null);
+    setLabelTitle("");
   };
 
   const filteredRefs = () =>
@@ -127,6 +269,11 @@ export default function RoadmapClient() {
       return;
     }
 
+    const itemLabels = labelsByItem.get(item._id) ?? [];
+    for (const label of itemLabels) {
+      await deleteLabel({ id: label._id });
+    }
+
     await deleteItem({ id: item._id });
     if (selectedItem?._id === item._id) {
       setSelectedItem(null);
@@ -141,6 +288,39 @@ export default function RoadmapClient() {
     direction: "up" | "down",
   ) => {
     await reorderItem({ id: item._id, direction });
+  };
+
+  const handleSaveLabel = async () => {
+    if (!labelTitle.trim()) {
+      alert("Please enter a label title");
+      return;
+    }
+
+    setIsSavingLabel(true);
+    try {
+      if (editingLabel) {
+        await updateLabel({
+          id: editingLabel._id,
+          title: labelTitle.trim(),
+        });
+      } else if (labelModalItemId) {
+        await createLabel({
+          itemId: labelModalItemId,
+          title: labelTitle.trim(),
+        });
+      }
+      closeLabelModal();
+    } finally {
+      setIsSavingLabel(false);
+    }
+  };
+
+  const handleDeleteLabel = async (label: RoadmapLabel) => {
+    if (!window.confirm(`Delete label "${label.title}"?`)) return;
+    await deleteLabel({ id: label._id });
+    if (editingLabel?._id === label._id) {
+      closeLabelModal();
+    }
   };
 
   const addRefField = () => {
@@ -169,9 +349,10 @@ export default function RoadmapClient() {
   };
 
   const isFormOpen = isAddingItem || editingItem !== null;
+  const isLabelModalOpen = labelModalItemId !== null;
 
   return (
-    <div className="min-h-screen bg-transparent relative z-10 px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
+    <div className="relative z-10 min-h-screen bg-transparent px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mx-auto max-w-6xl">
         <div
           className={`mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-center ${
@@ -198,12 +379,12 @@ export default function RoadmapClient() {
 
         {/* Timeline */}
         <div className="relative">
-          {/* Mobile: left rail | Desktop: center rail */}
-          <div className="absolute bottom-0 top-0 left-[11px] w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 md:left-1/2 md:w-1 md:-translate-x-1/2" />
+          <div className="absolute top-0 bottom-0 left-[11px] w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 md:left-1/2 md:w-1 md:-translate-x-1/2" />
 
           <div className="space-y-6 sm:space-y-10 md:space-y-12">
             {sortedItems.map((item, index) => {
               const isEven = index % 2 === 0;
+              const itemLabels = labelsByItem.get(item._id) ?? [];
 
               return (
                 <div
@@ -212,7 +393,6 @@ export default function RoadmapClient() {
                     isEven ? "md:flex-row" : "md:flex-row-reverse"
                   }`}
                 >
-                  {/* Card column */}
                   <div
                     className={`min-w-0 flex-1 pl-10 md:w-1/2 md:flex-none md:pl-0 ${
                       isEven ? "md:pr-8 md:pl-0" : "md:pl-8 md:pr-0"
@@ -229,6 +409,14 @@ export default function RoadmapClient() {
                           </h3>
                         </div>
                       </button>
+
+                      <ItemLabels
+                        labels={itemLabels}
+                        isAdmin={isAdmin}
+                        onAddLabel={() => openAddLabelModal(item._id)}
+                        onEditLabel={openEditLabelModal}
+                        onDeleteLabel={handleDeleteLabel}
+                      />
 
                       {isAdmin && (
                         <div className="mt-2 flex flex-wrap gap-1.5 md:absolute md:top-2 md:mt-0 md:gap-1 md:right-2">
@@ -275,10 +463,8 @@ export default function RoadmapClient() {
                     </div>
                   </div>
 
-                  {/* Dot */}
                   <div className="absolute top-4 left-1.5 z-10 h-3.5 w-3.5 shrink-0 rounded-full border-[3px] border-slate-900 bg-blue-500 shadow-lg shadow-blue-500/50 md:static md:top-auto md:left-auto md:h-4 md:w-4 md:border-4" />
 
-                  {/* Desktop spacer to balance alternating layout */}
                   <div className="hidden md:block md:w-1/2" />
                 </div>
               );
@@ -494,6 +680,73 @@ export default function RoadmapClient() {
                     : editingItem
                       ? "Save Changes"
                       : "Add Item"}
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add / Edit Label Modal */}
+      {isLabelModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/60 p-0 sm:items-center sm:p-4">
+          <div
+            className="flex w-full max-w-md flex-col overflow-hidden rounded-t-2xl border border-slate-700 bg-slate-800 shadow-2xl sm:rounded-lg"
+            role="dialog"
+            aria-modal="true"
+            aria-labelledby="label-form-title"
+          >
+            <div className="flex items-start justify-between gap-3 border-b border-slate-700 px-4 py-4 sm:px-6">
+              <h2
+                id="label-form-title"
+                className="text-lg font-bold text-white"
+              >
+                {editingLabel ? "Edit Label" : "Add Label"}
+              </h2>
+              <button
+                onClick={closeLabelModal}
+                className="rounded-lg p-2 text-slate-400 transition-colors hover:bg-white/10 hover:text-white"
+                aria-label="Close"
+              >
+                <X size={24} />
+              </button>
+            </div>
+
+            <div className="space-y-4 px-4 py-5 sm:px-6">
+              <div>
+                <label className="mb-2 block text-sm font-semibold text-slate-300">
+                  Label Title *
+                </label>
+                <input
+                  type="text"
+                  value={labelTitle}
+                  onChange={(e) => setLabelTitle(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") handleSaveLabel();
+                  }}
+                  className="w-full rounded-lg border border-slate-600 bg-slate-700 px-3 py-2.5 text-base text-white placeholder-slate-400 focus:border-blue-500 focus:outline-none sm:text-sm"
+                  placeholder="e.g. What is an ML Engineer?"
+                  autoFocus
+                />
+              </div>
+
+              <div className="flex flex-col-reverse gap-2 border-t border-slate-700 pt-4 sm:flex-row">
+                <button
+                  onClick={closeLabelModal}
+                  className="flex-1 rounded-lg bg-slate-700 px-4 py-2.5 text-white transition-colors hover:bg-slate-600"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={handleSaveLabel}
+                  disabled={isSavingLabel}
+                  className="flex-1 rounded-lg bg-blue-600 px-4 py-2.5 text-white transition-colors hover:bg-blue-700 disabled:opacity-50"
+                >
+                  {isSavingLabel
+                    ? "Saving..."
+                    : editingLabel
+                      ? "Save Label"
+                      : "Add Label"}
                 </button>
               </div>
             </div>
