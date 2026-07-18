@@ -1,5 +1,13 @@
 import { mutation, query } from "./_generated/server";
 import { v } from "convex/values";
+import { requireAdmin } from "./lib/auth";
+import {
+  LIMITS,
+  validateItemDescription,
+  validateItemTitle,
+  validateLabelTitle,
+  validateRefs,
+} from "./lib/validation";
 
 const refValidator = v.object({
   title: v.string(),
@@ -23,14 +31,25 @@ export const createItem = mutation({
     title: v.string(),
     description: v.string(),
     refs: v.array(refValidator),
-    order: v.number(),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const title = validateItemTitle(args.title);
+    const description = validateItemDescription(args.description);
+    const refs = validateRefs(args.refs);
+
+    const items = await ctx.db
+      .query("roadmapItems")
+      .withIndex("by_order")
+      .order("asc")
+      .collect();
+
     return await ctx.db.insert("roadmapItems", {
-      title: args.title,
-      description: args.description,
-      refs: args.refs,
-      order: args.order,
+      title,
+      description,
+      refs,
+      order: items.length,
     });
   },
 });
@@ -43,10 +62,21 @@ export const updateItem = mutation({
     refs: v.array(refValidator),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const existing = await ctx.db.get(args.id);
+    if (!existing) {
+      throw new Error("Item not found");
+    }
+
+    const title = validateItemTitle(args.title);
+    const description = validateItemDescription(args.description);
+    const refs = validateRefs(args.refs);
+
     await ctx.db.patch(args.id, {
-      title: args.title,
-      description: args.description,
-      refs: args.refs,
+      title,
+      description,
+      refs,
     });
   },
 });
@@ -54,14 +84,23 @@ export const updateItem = mutation({
 export const deleteItem = mutation({
   args: { id: v.id("roadmapItems") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     const item = await ctx.db.get(args.id);
     if (!item) {
       throw new Error("Item not found");
     }
 
+    const labels = await ctx.db
+      .query("roadmapLabels")
+      .withIndex("by_item", (q) => q.eq("itemId", args.id))
+      .collect();
+    for (const label of labels) {
+      await ctx.db.delete(label._id);
+    }
+
     await ctx.db.delete(args.id);
 
-    // Compact order values after deletion
     const remaining = await ctx.db
       .query("roadmapItems")
       .withIndex("by_order")
@@ -89,14 +128,27 @@ export const createLabel = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
+    const item = await ctx.db.get(args.itemId);
+    if (!item) {
+      throw new Error("Item not found");
+    }
+
+    const title = validateLabelTitle(args.title);
+
     const existing = await ctx.db
       .query("roadmapLabels")
       .withIndex("by_item", (q) => q.eq("itemId", args.itemId))
       .collect();
 
+    if (existing.length >= LIMITS.maxLabelsPerItem) {
+      throw new Error(`At most ${LIMITS.maxLabelsPerItem} labels are allowed`);
+    }
+
     return await ctx.db.insert("roadmapLabels", {
       itemId: args.itemId,
-      title: args.title,
+      title,
       order: existing.length,
     });
   },
@@ -108,13 +160,23 @@ export const updateLabel = mutation({
     title: v.string(),
   },
   handler: async (ctx, args) => {
-    await ctx.db.patch(args.id, { title: args.title });
+    await requireAdmin(ctx);
+
+    const label = await ctx.db.get(args.id);
+    if (!label) {
+      throw new Error("Label not found");
+    }
+
+    const title = validateLabelTitle(args.title);
+    await ctx.db.patch(args.id, { title });
   },
 });
 
 export const deleteLabel = mutation({
   args: { id: v.id("roadmapLabels") },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     const label = await ctx.db.get(args.id);
     if (!label) {
       throw new Error("Label not found");
@@ -142,6 +204,8 @@ export const reorderItem = mutation({
     direction: v.union(v.literal("up"), v.literal("down")),
   },
   handler: async (ctx, args) => {
+    await requireAdmin(ctx);
+
     const items = await ctx.db
       .query("roadmapItems")
       .withIndex("by_order")

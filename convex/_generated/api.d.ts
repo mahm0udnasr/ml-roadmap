@@ -8,7 +8,11 @@
  * @module
  */
 
+import type * as admins from "../admins.js";
+import type * as lib_auth from "../lib/auth.js";
+import type * as lib_validation from "../lib/validation.js";
 import type * as roadmap from "../roadmap.js";
+import type * as viewer from "../viewer.js";
 
 import type {
   ApiFromModules,
@@ -17,7 +21,11 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  admins: typeof admins;
+  "lib/auth": typeof lib_auth;
+  "lib/validation": typeof lib_validation;
   roadmap: typeof roadmap;
+  viewer: typeof viewer;
 }>;
 
 /**

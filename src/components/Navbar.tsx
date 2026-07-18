@@ -1,9 +1,10 @@
 "use client";
 
-import { UserButton, useUser } from "@clerk/nextjs";
+import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import { SOCIAL_LINKS } from "@/lib/socialLinks";
 import { SocialIcon } from "@/components/SocialIcon";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 
 function SocialLinks() {
   return (
@@ -26,8 +27,7 @@ function SocialLinks() {
 }
 
 export default function Navbar() {
-  const { user, isLoaded } = useUser();
-  const isAdmin = isLoaded && user?.publicMetadata?.role === "admin";
+  const { isAdmin, isLoading } = useIsAdmin();
 
   return (
     <header className="sticky top-0 z-40 border-b border-white/10 bg-[rgba(10,10,15,0.85)] backdrop-blur-xl">
@@ -44,7 +44,7 @@ export default function Navbar() {
         <div className="flex items-center gap-2 sm:gap-3">
           <SocialLinks />
 
-          {isAdmin && (
+          {!isLoading && isAdmin && (
             <div className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-2 py-1.5 sm:px-3">
               <span className="hidden text-xs font-semibold uppercase tracking-[0.2em] text-zinc-400 sm:inline">
                 Admin

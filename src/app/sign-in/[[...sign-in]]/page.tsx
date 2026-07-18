@@ -3,7 +3,7 @@ import { SignIn } from "@clerk/nextjs";
 export default function SignInPage() {
   return (
     <main className="flex min-h-[calc(100dvh-4rem)] items-center justify-center px-4 py-10">
-      <SignIn routing="path" path="/sign-in" />
+      <SignIn routing="path" path="/sign-in" fallbackRedirectUrl="/" />
     </main>
   );
 }

@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import { useQuery, useMutation } from "convex/react";
-import { useUser } from "@clerk/nextjs";
+import { useIsAdmin } from "@/hooks/useIsAdmin";
 import { api } from "../../../convex/_generated/api";
 import type { Id } from "../../../convex/_generated/dataModel";
 import {
@@ -234,7 +234,7 @@ function ItemLabels({
 }
 
 export default function RoadmapClient() {
-  const { user } = useUser();
+  const { isAdmin } = useIsAdmin();
   const items = useQuery(api.roadmap.getItems) ?? [];
   const labels = useQuery(api.roadmap.getLabels) ?? [];
   const createItem = useMutation(api.roadmap.createItem);
@@ -259,7 +259,6 @@ export default function RoadmapClient() {
   const [isSavingLabel, setIsSavingLabel] = useState(false);
 
   const sortedItems = [...items].sort((a, b) => a.order - b.order);
-  const isAdmin = user?.publicMetadata?.role === "admin";
 
   const labelsByItem = useMemo(() => {
     const map = new Map<string, RoadmapLabel[]>();
@@ -346,7 +345,6 @@ export default function RoadmapClient() {
         title: formData.title.trim(),
         description: formData.description.trim(),
         refs: filteredRefs(),
-        order: sortedItems.length,
       });
       resetForm();
     } finally {

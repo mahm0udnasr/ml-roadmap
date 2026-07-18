@@ -20,4 +20,9 @@ export default defineSchema({
     title: v.string(),
     order: v.number(),
   }).index("by_item", ["itemId", "order"]),
+
+  admins: defineTable({
+    tokenIdentifier: v.string(),
+    email: v.optional(v.string()),
+  }).index("by_token", ["tokenIdentifier"]),
 });
