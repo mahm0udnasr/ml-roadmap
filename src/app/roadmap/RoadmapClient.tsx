@@ -199,7 +199,7 @@ function ItemLabels({
     <div className="relative mt-3 pl-4">
       {labels.length > 0 && (
         <div
-          className="absolute top-2 bottom-2 left-0 w-0 border-l-2 border-dotted border-blue-500"
+          className="absolute top-2 bottom-2 left-0 w-0 border-l-2 border-dotted border-[#8b5cf6]/50"
           aria-hidden="true"
         />
       )}
@@ -207,7 +207,7 @@ function ItemLabels({
         {labels.map((label) => (
           <div key={label._id} className="relative pl-3">
             <div
-              className="absolute top-1/2 left-0 w-3 -translate-y-1/2 border-t-2 border-dotted border-blue-500"
+              className="absolute top-1/2 left-0 w-3 -translate-y-1/2 border-t-2 border-dotted border-[#8b5cf6]/50"
               aria-hidden="true"
             />
             <SubLabel
@@ -514,7 +514,10 @@ export default function RoadmapClient() {
 
         {/* Timeline */}
         <div className="relative">
-          <div className="absolute top-0 bottom-0 left-[11px] w-0.5 bg-gradient-to-b from-blue-500 via-purple-500 to-pink-500 md:left-1/2 md:w-1 md:-translate-x-1/2" />
+          <div
+            className="absolute top-0 bottom-0 left-[11px] w-px bg-gradient-to-b from-[#6366f1] via-[#8b5cf6] to-[#a78bfa] opacity-90 md:left-1/2 md:w-0.5 md:-translate-x-1/2"
+            aria-hidden="true"
+          />
 
           <div className="space-y-6 sm:space-y-10 md:space-y-12">
             {sortedItems.map((item, index) => {

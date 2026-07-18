@@ -181,10 +181,10 @@ export function getItemCardBorderClass(status: ProgressStatus) {  switch (status
 export function getTimelineDotClass(status: ProgressStatus) {
   switch (status) {
     case "in-progress":
-      return "bg-[#8b5cf6] shadow-[#8b5cf6]/50";
+      return "bg-[#8b5cf6] shadow-[0_0_10px_rgba(139,92,246,0.55)]";
     case "done":
-      return "bg-[#a78bfa] shadow-[#a78bfa]/50";
+      return "bg-[#a78bfa] shadow-[0_0_10px_rgba(167,139,250,0.5)]";
     default:
-      return "bg-blue-500 shadow-blue-500/50";
+      return "bg-[#6366f1] shadow-[0_0_10px_rgba(99,102,241,0.5)]";
   }
 }
