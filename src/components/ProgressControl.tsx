@@ -120,10 +120,13 @@ export function RoadmapProgressButton({
         onClick={() => setOpen((value) => !value)}
         aria-expanded={open}
         aria-haspopup="dialog"
-        className="inline-flex items-center justify-center gap-2 rounded-lg border border-white/10 bg-white/5 px-4 py-2.5 text-sm font-medium text-zinc-200 transition-colors hover:border-[#8b5cf6]/40 hover:bg-[#8b5cf6]/10 hover:text-white"
+        className="inline-flex items-center justify-center gap-1.5 rounded-lg border border-white/10 bg-white/5 px-3 py-2 text-xs font-medium text-zinc-200 transition-colors hover:border-[#8b5cf6]/40 hover:bg-[#8b5cf6]/10 hover:text-white sm:gap-2 sm:px-4 sm:py-2.5 sm:text-sm"
       >
-        <ChartNoAxesColumnIncreasing size={18} />
-        Progress {percent}%
+        <ChartNoAxesColumnIncreasing size={16} className="sm:h-[18px] sm:w-[18px]" />
+        <span className="whitespace-nowrap">
+          <span className="hidden sm:inline">Progress </span>
+          {percent}%
+        </span>
       </button>
 
       {open && (

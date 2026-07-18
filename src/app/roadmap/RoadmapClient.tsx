@@ -472,33 +472,44 @@ export default function RoadmapClient() {
   return (
     <div className="relative min-h-screen bg-transparent px-3 py-8 sm:px-6 sm:py-10 lg:px-8">
       <div className="mx-auto max-w-6xl">
-        <div
-          className={`mb-8 flex flex-col gap-4 sm:mb-12 sm:flex-row sm:items-center ${
-            isAdmin ? "sm:justify-between" : "sm:justify-between"
-          }`}
-        >
-          <h1 className="text-center text-2xl font-bold text-white sm:text-left sm:text-4xl">
-            Machine Learning
-          </h1>
-          <div className="mx-auto flex w-full max-w-xs items-center justify-center gap-2 sm:mx-0 sm:w-auto">
-            <RoadmapProgressButton
-              counts={progressStats.counts}
-              totalCount={progressStats.totalCount}
-            />
-            {isAdmin && (
-              <button
-                onClick={() => {
-                  setFormData(emptyForm);
-                  setEditingItem(null);
-                  setIsAddingItem(true);
-                }}
-                className="flex flex-1 items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:flex-none"
-              >
-                <Plus size={20} />
-                Add Item
-              </button>
-            )}
+        <div className="mb-8 sm:mb-12">
+          <div className="flex items-center justify-between gap-3">
+            <h1 className="min-w-0 flex-1 text-xl font-bold text-white sm:text-4xl">
+              Machine Learning
+            </h1>
+            <div className="flex shrink-0 items-center gap-2">
+              <RoadmapProgressButton
+                counts={progressStats.counts}
+                totalCount={progressStats.totalCount}
+              />
+              {isAdmin && (
+                <button
+                  onClick={() => {
+                    setFormData(emptyForm);
+                    setEditingItem(null);
+                    setIsAddingItem(true);
+                  }}
+                  className="hidden items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:inline-flex"
+                >
+                  <Plus size={20} />
+                  Add Item
+                </button>
+              )}
+            </div>
           </div>
+          {isAdmin && (
+            <button
+              onClick={() => {
+                setFormData(emptyForm);
+                setEditingItem(null);
+                setIsAddingItem(true);
+              }}
+              className="mt-3 flex w-full items-center justify-center gap-2 rounded-lg bg-purple-600 px-4 py-2.5 text-white transition-colors hover:bg-purple-700 sm:hidden"
+            >
+              <Plus size={20} />
+              Add Item
+            </button>
+          )}
         </div>
 
         {/* Timeline */}
